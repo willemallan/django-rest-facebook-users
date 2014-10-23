@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import requests, json
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
@@ -21,8 +22,17 @@ def client_list(request):
     """
     List all code clients, or create a new client.
     """
+    limit = int(request.GET.get('limit', 1))
+
     if request.method == 'GET':
-        clients = Client.objects.all()
+        p = Paginator(Client.objects.all(), 10)
+        num_pages = p.num_pages
+        if limit <= num_pages:
+            page = p.page(limit)
+            clients = page.object_list
+        else:
+            return JSONResponse({'erro': 'no more records'})
+
         serializer = ClientSerializer(clients, many=True)
         return JSONResponse(serializer.data)
 
@@ -39,20 +49,19 @@ def client_list(request):
                     name='{0} {1}'.format(data['first_name'], data['last_name']),
                     gender=data['gender']
                 )
-                # return HttpResponse(client)
                 if created:
-                    return JSONResponse(client, status=201)
+                    return JSONResponse(json.dumps(client), status=201)
             return JSONResponse('facebook_id already exists', status=500)
 
         return JSONResponse('facebook_id not found', status=404)
 
 @csrf_exempt
-def client_detail(request, pk):
+def client_detail(request, facebook_id):
     """
     Retrieve, update or delete a code client.
     """
     try:
-        client = Client.objects.get(pk=pk)
+        client = Client.objects.get(facebook_id=facebook_id)
     except Client.DoesNotExist:
         return HttpResponse(status=404)
 
