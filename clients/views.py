@@ -27,27 +27,24 @@ def client_list(request):
         return JSONResponse(serializer.data)
 
     elif request.method == 'POST':
-        r = requests.get('http://graph.facebook.com/{0}'.format(request.POST.get('facebook_id')))
+        facebook_id = request.POST.get('facebook_id')
+        r = requests.get('http://graph.facebook.com/{0}'.format(facebook_id))
         if r.status_code == 200:
+            data = json.loads(r.content)
 
-            data = {
-                'facebook_id': r.content['id'], 
-                'username': r.content['id'],
-                'name': '{0} {1}'.format(r.content['first_name'], r.content['last_name']),
-                'gender': r.content['gender']
-            }
-            print type(data)
-            data = json.dumps(data)  
-            print type(data)
-            data = json.loads(data)
-            print type(data)
-            print data
+            if not Client.objects.filter(facebook_id=data['id']):
+                client, created = Client.objects.create(
+                    facebook_id=data['id'], 
+                    username=data['username'],
+                    name='{0} {1}'.format(data['first_name'], data['last_name']),
+                    gender=data['gender']
+                )
+                # return HttpResponse(client)
+                if created:
+                    return JSONResponse(client, status=201)
+            return JSONResponse('facebook_id already exists', status=500)
 
-            serializer = ClientSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JSONResponse(serializer.data, status=201)
-        return JSONResponse('facebook_id not found', status=400)
+        return JSONResponse('facebook_id not found', status=404)
 
 @csrf_exempt
 def client_detail(request, pk):
