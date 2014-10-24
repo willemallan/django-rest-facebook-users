@@ -16,3 +16,7 @@ client.delete('/clients/123/', {}, format='json')
 # request = factory.get('/clients/123/', {}, format='json')
 # request = factory.get('/clients/?limit=1', {}, format='json')
 # request = factory.delete('/clients/123/', {}, format='json')
+
+
+# curl -X POST http://127.0.0.1:8000/clients/ -d "facebook_id=123"
+# curl -X DELETE http://127.0.0.1:8000/clients/123/

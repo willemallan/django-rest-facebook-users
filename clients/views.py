@@ -22,9 +22,9 @@ def client_list(request):
     """
     List all code clients, or create a new client.
     """
-    limit = int(request.GET.get('limit', 1))
 
     if request.method == 'GET':
+        limit = int(request.GET.get('limit', 1))
         p = Paginator(Client.objects.all(), 10)
         num_pages = p.num_pages
         if limit <= num_pages:
