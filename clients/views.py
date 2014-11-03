@@ -8,6 +8,10 @@ from rest_framework.parsers import JSONParser
 from clients.models import Client
 from clients.serializers import ClientSerializer
 
+def log(name, function, message='', level='INFO'):
+    from logs.models import Log
+    Log.objects.create(name=name, function=function, message=message, level=level)
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
@@ -30,6 +34,7 @@ def client_list(request):
         if limit <= num_pages:
             page = p.page(limit)
             clients = page.object_list
+            log('client_list', 'list', 'list users')
         else:
             return JSONResponse({'erro': 'no more records'})
 
@@ -43,6 +48,7 @@ def client_list(request):
             data = json.loads(r.content)
 
             if not Client.objects.filter(facebook_id=data['id']):
+                log('client_list', 'new', 'new client %s' % facebook_id)
                 client, created = Client.objects.create(
                     facebook_id=data['id'], 
                     username=data['username'],
@@ -51,6 +57,7 @@ def client_list(request):
                 )
                 if created:
                     return JSONResponse(json.dumps(client), status=201)
+            log('client_list', 'new', 'facebook_id %s already exists' % facebook_id, 'ERROR')
             return JSONResponse('facebook_id already exists', status=500)
 
         return JSONResponse('facebook_id not found', status=404)
@@ -67,6 +74,7 @@ def client_detail(request, facebook_id):
 
     if request.method == 'GET':
         serializer = ClientSerializer(client)
+        log('client_detail', 'detail', 'detail user %s' % facebook_id)
         return JSONResponse(serializer.data)
 
     elif request.method == 'PUT':
@@ -79,4 +87,5 @@ def client_detail(request, facebook_id):
 
     elif request.method == 'DELETE':
         client.delete()
+        log('client', 'delete', 'delete client %s' % facebook_id)
         return HttpResponse(status=204)
