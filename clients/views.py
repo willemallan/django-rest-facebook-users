@@ -46,17 +46,24 @@ def client_list(request):
         r = requests.get('http://graph.facebook.com/{0}'.format(facebook_id))
         if r.status_code == 200:
             data = json.loads(r.content)
-
+            print data['id']
             if not Client.objects.filter(facebook_id=data['id']):
                 log('client_list', 'new', 'new client %s' % facebook_id)
-                client, created = Client.objects.create(
-                    facebook_id=data['id'], 
-                    username=data['username'],
-                    name='{0} {1}'.format(data['first_name'], data['last_name']),
-                    gender=data['gender']
+                facebook_id = data['id']
+                username = data['username']
+                name = u'{0} {1}'.format(data['first_name'], data['last_name'])
+                gender = data['gender']
+
+                client = Client.objects.create(
+                    facebook_id=facebook_id, 
+                    username=username,
+                    name=name,
+                    gender=gender
                 )
-                if created:
-                    return JSONResponse(json.dumps(client), status=201)
+
+                client = Client.objects.filter(facebook_id=facebook_id).values('facebook_id', 'username', 'name', 'gender')
+                return HttpResponse(client, status=201)
+
             log('client_list', 'new', 'facebook_id %s already exists' % facebook_id, 'ERROR')
             return JSONResponse('facebook_id already exists', status=500)
 

@@ -1,22 +1,11 @@
 from rest_framework.test import APIClient
 
 client = APIClient()
-client.post('/clients/', {'facebook_id': '123'}, format='json')
-client.get('/clients/', {}, format='json')
-client.get('/clients/123/', {}, format='json')
-client.get('/clients/?limit=1', {}, format='json')
-client.delete('/clients/123/', {}, format='json')
-
-# from rest_framework.test import APIRequestFactory
-
-# # Using the standard RequestFactory API to create a form POST request
-# factory = APIRequestFactory()
-# request = factory.post('/clients/', {'facebook_id': '123'}, format='json')
-# request = factory.get('/clients/', {}, format='json')
-# request = factory.get('/clients/123/', {}, format='json')
-# request = factory.get('/clients/?limit=1', {}, format='json')
-# request = factory.delete('/clients/123/', {}, format='json')
-
-
-# curl -X POST http://127.0.0.1:8000/clients/ -d "facebook_id=123"
-# curl -X DELETE http://127.0.0.1:8000/clients/123/
+client.post('/person/', {'facebook_id': '123'})
+client.post('/person/', {'facebook_id': '1234'})
+client.post('/person/', {'facebook_id': '12345'})
+client.post('/person/', {'facebook_id': '123456'})
+client.get('/person/', {})
+client.get('/person/123/', {})
+client.get('/person/?limit=1', {})
+client.delete('/person/123/', {})
